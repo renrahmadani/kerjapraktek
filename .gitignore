@@ -1,0 +1,14 @@
+# Dependencies (install ulang pakai: composer install)
+/vendor/
+
+# Upload files dari user
+/uploads/
+
+# File sistem
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.vscode/
+.idea/
