@@ -271,7 +271,7 @@ try {
 
         <div class="sidebar-footer">
             <ul class="sidebar-nav" style="gap:0;">
-                <li><a href="../auth.php?action=logout" onclick="return confirm('Logout dari Dashboard?');"><span class="material-symbols-outlined">logout</span>Logout</a></li>
+                <li><a href="#" onclick="confirmLogout(event, '../auth.php?action=logout');"><span class="material-symbols-outlined">logout</span>Logout</a></li>
             </ul>
         </div>
     </nav>
@@ -486,6 +486,24 @@ function showTimelineModal(rowEl, event) {
         confirmButtonText: 'Tutup Detail',
         confirmButtonColor: 'var(--primary)',
         backdrop: `rgba(0,0,0,0.4)`
+    });
+}
+
+function confirmLogout(event, url) {
+    event.preventDefault();
+    Swal.fire({
+        title: 'Konfirmasi Logout',
+        text: 'Apakah Anda yakin ingin keluar dari sesi admin?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = url;
+        }
     });
 }
 </script>

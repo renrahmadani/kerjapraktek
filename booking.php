@@ -14,7 +14,7 @@ $error_msg = '';
 // Ambil email admin
 $stmt_admin = $pdo->query("SELECT email FROM users WHERE role = 'admin' LIMIT 1");
 $admin_data = $stmt_admin->fetch();
-$admin_email = $admin_data ? $admin_data['email'] : 'vandptr@gmail.com';
+$admin_email = $admin_data ? $admin_data['email'] : ADMIN_EMAIL;
 
 // Proses Form Booking
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -166,11 +166,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <p style='font-size: 13px; color: #94a3b8; text-align: center; margin-top: 30px; border-top: 1px solid #f1f5f9; padding-top: 15px;'>
                         Email ini di-generate otomatis oleh Sistem Layanan Bengkel PT. Wahana Indo Trada.<br>
-                        Mohon segera periksa dasbor admin untuk memproses pesanan ini.
+                        Mohon segera periksa dashboard admin untuk memproses pesanan ini.
                     </p>
                 </div>
             </div>";
             send_email_notification($admin_email, $email_subject, $email_body);
+
+            // Kirim Email ke Customer
+            $stmt_u = $pdo->prepare("SELECT email FROM users WHERE id=?");
+            $stmt_u->execute([$user_id]);
+            $uData = $stmt_u->fetch();
+            $cust_email = $uData['email'] ?? '';
+            
+            if (!empty($cust_email)) {
+                $cust_subject = "Pemesanan Servis Berhasil - $booking_code";
+                $cust_body = "
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 20px; border-radius: 8px;'>
+                    <div style='background-color: #0f172a; color: #ffffff; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;'>
+                        <h1 style='margin: 0; font-size: 22px; font-weight: bold;'>PT. Wahana Indo Trada</h1>
+                        <p style='margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;'>Pemberitahuan Status Servis Kendaraan</p>
+                    </div>
+                    <div style='background-color: #ffffff; padding: 25px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);'>
+                        <p style='font-size: 16px; color: #334155; margin-top: 0;'>Halo <strong>" . htmlspecialchars($customer_name) . "</strong>,</p>
+                        <p style='font-size: 15px; color: #475569; line-height: 1.5;'>Terima kasih telah melakukan pemesanan antrean servis. Pesanan Anda saat ini <strong>Berhasil Dibuat</strong> dan sedang menunggu proses konfirmasi oleh bengkel kami.</p>
+                        
+                        <div style='background-color: #f1f5f9; padding: 15px; border-radius: 6px; margin: 20px 0;'>
+                            <table width='100%' cellpadding='0' cellspacing='0' style='font-size: 14px;'>
+                                <tr><td width='35%' style='padding: 6px 0; color: #64748b;'>Kode Booking</td><td style='padding: 6px 0; font-weight: bold; color: #0f172a;'>: $booking_code</td></tr>
+                                <tr><td style='padding: 6px 0; color: #64748b;'>Layanan Servis</td><td style='padding: 6px 0; font-weight: bold; color: #2563eb;'>: " . htmlspecialchars($service_name) . "</td></tr>
+                                <tr><td style='padding: 6px 0; color: #64748b;'>Jadwal Terpilih</td><td style='padding: 6px 0; font-weight: bold; color: #0f172a;'>: " . date('d M Y', strtotime($tgl_booking)) . ", " . substr($jam_booking, 0, 5) . " WIB</td></tr>
+                                <tr><td style='padding: 6px 0; color: #64748b;'>Status Pemesanan</td><td style='padding: 6px 0; font-weight: bold; color: #0f172a;'>: BARU</td></tr>
+                            </table>
+                        </div>
+
+                        <!-- Data Kendaraan -->
+                        <h3 style='font-size: 15px; color: #0f172a; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px;'>Kendaraan Anda</h3>
+                        <table width='100%' cellpadding='0' cellspacing='0' style='font-size: 14px; margin-bottom: 20px; border-collapse: collapse;'>
+                            <thead>
+                                <tr style='background-color: #f8fafc; color: #475569; text-align: left;'>
+                                    <th style='padding: 8px; border-bottom: 2px solid #cbd5e1;'>Nama/Merek Kendaraan</th>
+                                    <th style='padding: 8px; border-bottom: 2px solid #cbd5e1;'>Nomor Polisi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                $kendaraan_html
+                            </tbody>
+                        </table>
+
+                        <!-- Jejak Waktu & Status -->
+                        <h3 style='font-size: 15px; color: #0f172a; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px;'>Histori & Jejak Waktu Status</h3>
+                        <table width='100%' cellpadding='0' cellspacing='0' style='font-size: 13px; border-collapse: collapse;'>
+                            <tr style='background-color: #f8fafc;'>
+                                <td style='padding: 8px; border: 1px solid #e2e8f0; font-weight: bold; color: #475569;' width='40%'>✔️ Dibuat (Baru)</td>
+                                <td style='padding: 8px; border: 1px solid #e2e8f0; color: #475569;'>$now_str WIB</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 8px; border: 1px solid #e2e8f0; color: #94a3b8;'>🔵 Diproses</td>
+                                <td style='padding: 8px; border: 1px solid #e2e8f0; color: #94a3b8; font-style: italic;'>Menunggu</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 8px; border: 1px solid #e2e8f0; color: #94a3b8;'>⚪ Selesai</td>
+                                <td style='padding: 8px; border: 1px solid #e2e8f0; color: #94a3b8; font-style: italic;'>Menunggu</td>
+                            </tr>
+                        </table>
+
+                        <p style='font-size: 13px; color: #94a3b8; text-align: center; margin-top: 30px; border-top: 1px solid #f1f5f9; padding-top: 15px;'>
+                            Terima kasih atas kepercayaan Anda kepada PT. Wahana Indo Trada.<br>
+                            Anda akan menerima pemberitahuan lebih lanjut saat pesanan Anda diproses.
+                        </p>
+                    </div>
+                </div>";
+                send_email_notification($cust_email, $cust_subject, $cust_body);
+            }
 
             $success_msg = "Booking berhasil diajukan dengan kode: $booking_code. Silakan konfirmasi ke Admin kami melalui WhatsApp.";
         } catch (PDOException $e) {
@@ -241,6 +308,17 @@ try {
         <div style="margin-bottom: 3rem;">
             <h1 class="page-title">Pilih Servis</h1>
             <p class="page-subtitle">Lengkapi detail kebutuhan servis kendaraan Anda.</p>
+
+            <!-- Catatan Aturan Booking -->
+            <div style="background: rgba(255,179,177,0.15); border-left: 4px solid var(--secondary); padding: 0.8rem 1rem; border-radius: 0 0.4rem 0.4rem 0; margin-top: 1.5rem;">
+                <span style="font-weight: 600; color: var(--secondary); display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem;">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">info</span>
+                    Catatan Penting:
+                </span>
+                <p style="font-size: 0.85rem; color: var(--on-surface-variant); margin-top: 0.2rem;">
+                    1 akun hanya dapat melakukan booking untuk 1 waktu/slot saja. Jika ingin melakukan pemesanan ganda di waktu yang sama atau mengubah jadwal, silakan hubungi WhatsApp Admin.
+                </p>
+            </div>
         </div>
 
         <!-- Progress Indicator -->
@@ -279,7 +357,7 @@ try {
                 <?php
                     $wa_text = urlencode("Halo Admin, saya baru saja melakukan booking servis dengan kode $booking_code. Mohon diproses ya.");
                 ?>
-                <a href="https://wa.me/6285591821790?text=<?= $wa_text ?>" target="_blank" class="btn-primary" style="text-decoration:none; display:inline-block; margin-top:0.5rem; background-color: #25D366; border-color: #25D366; box-shadow: none;">Chat WA Admin Sekarang</a>
+                <a href="https://wa.me/<?= WA_NUMBER ?>?text=<?= $wa_text ?>" target="_blank" class="btn-primary" style="text-decoration:none; display:inline-block; margin-top:0.5rem; background-color: #25D366; border-color: #25D366; box-shadow: none;">Chat WA Admin Sekarang</a>
                 <a href="index.php" class="btn-secondary" style="text-decoration:none; display:inline-block; margin-top:0.5rem; margin-left: 0.5rem;">Kembali ke Beranda</a>
             </div>
         <?php else: ?>
@@ -384,16 +462,7 @@ try {
                     <textarea name="keluhan" id="keluhan" rows="4" class="form-control" placeholder="Jelaskan keluhan pada kendaraan Anda secara detail..."></textarea>
                 </div>
 
-                <!-- Catatan Aturan Booking -->
-                <div style="background: rgba(255,179,177,0.15); border-left: 4px solid var(--secondary); padding: 0.8rem 1rem; border-radius: 0 0.4rem 0.4rem 0; margin-top: 1.5rem;">
-                    <span style="font-weight: 600; color: var(--secondary); display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem;">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">info</span>
-                        Catatan Penting:
-                    </span>
-                    <p style="font-size: 0.85rem; color: var(--on-surface-variant); margin-top: 0.2rem;">
-                        1 akun hanya dapat melakukan booking untuk 1 waktu/slot saja. Jika ingin melakukan pemesanan ganda di waktu yang sama atau mengubah jadwal, silakan hubungi WhatsApp Admin.
-                    </p>
-                </div>
+
             </section>
 
             <!-- Action Buttons -->
@@ -565,7 +634,7 @@ try {
                 icon: 'success',
                 title: 'Booking Berhasil!',
                 html: `<?= addslashes(htmlspecialchars($success_msg)) ?><br><br>
-                       <a href="https://wa.me/6285591821790?text=<?= addslashes(isset($wa_text) ? $wa_text : '') ?>" target="_blank" style="background-color: #25D366; color: white; padding: 0.6rem 1.2rem; border-radius: 0.5rem; text-decoration: none; display: inline-block; margin-top: 0.5rem; font-weight: bold; box-shadow: 0 4px 12px rgba(37,211,102,0.3);">💬 Chat WA Admin Sekarang</a>`,
+                       <a href="https://wa.me/<?= WA_NUMBER ?>?text=<?= addslashes(isset($wa_text) ? $wa_text : '') ?>" target="_blank" style="background-color: #25D366; color: white; padding: 0.6rem 1.2rem; border-radius: 0.5rem; text-decoration: none; display: inline-block; margin-top: 0.5rem; font-weight: bold; box-shadow: 0 4px 12px rgba(37,211,102,0.3);">💬 Chat WA Admin Sekarang</a>`,
                 confirmButtonText: 'Tutup & Lihat Riwayat',
                 confirmButtonColor: 'var(--primary)',
                 allowOutsideClick: false
@@ -598,7 +667,7 @@ try {
     </div>
 
     <!-- FAB WhatsApp -->
-    <a href="https://wa.me/6285591821790?text=Halo%20Bengkel%20Wahana%20Indo%20Trada.%20Saya%20ingin%20bertanya%20seputar%20servis." target="_blank" class="fab-wa" aria-label="Chat via WhatsApp">
+    <a href="https://wa.me/<?= WA_NUMBER ?>?text=Halo%20Bengkel%20Wahana%20Indo%20Trada.%20Saya%20ingin%20bertanya%20seputar%20servis." target="_blank" class="fab-wa" aria-label="Chat via WhatsApp">
         <svg fill="currentColor" height="28" viewBox="0 0 24 24" width="28">
             <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.347-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"></path>
         </svg>

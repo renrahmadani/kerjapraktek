@@ -45,8 +45,8 @@ try {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - PT. Wahana Indo Trada</title>
-    <!-- Use relative path to link CSS -->
     <link rel="stylesheet" href="../style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="dashboard-layout">
     
@@ -102,7 +102,7 @@ try {
 
                 <li>
                     <!-- Hapus Session/Logout -->
-                    <a href="../auth.php?action=logout" onclick="return confirm('Anda yakin ingin logout?');">
+                    <a href="#" onclick="confirmLogout(event, '../auth.php?action=logout');">
                         <span class="material-symbols-outlined">logout</span>
                         Logout
                     </a>
@@ -277,5 +277,24 @@ try {
         </div>
     </main>
 
+<script>
+function confirmLogout(event, url) {
+    event.preventDefault();
+    Swal.fire({
+        title: 'Konfirmasi Logout',
+        text: 'Apakah Anda yakin ingin keluar dari sesi admin?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = url;
+        }
+    });
+}
+</script>
 </body>
 </html>

@@ -12,3 +12,6 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Data sensitif (email, password, nomor WA)
+env.php

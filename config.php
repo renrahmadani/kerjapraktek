@@ -2,6 +2,9 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+// Load konfigurasi sensitif (email, password, nomor WA)
+require_once __DIR__ . '/env.php';
 $host = '127.0.0.1';
 $db   = 'db_wahanaindotrada';
 $user = 'root';
@@ -72,13 +75,13 @@ function send_email_notification($to_email, $subject, $body) {
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'vandptr@gmail.com'; // Admin Gmail
-        $mail->Password   = 'pehtzfalttolosbk';  // App Password
+        $mail->Username   = SMTP_EMAIL;
+        $mail->Password   = SMTP_PASSWORD;
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
         // Recipients
-        $mail->setFrom('vandptr@gmail.com', 'Wahana Indo Trada Service');
+        $mail->setFrom(SMTP_EMAIL, 'Wahana Indo Trada Service');
         $mail->addAddress($to_email);
 
         // Content

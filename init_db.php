@@ -133,7 +133,7 @@ try {
     $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
     if ($stmt->fetchColumn() == 0) {
         $admin_pass = password_hash('admin123', PASSWORD_DEFAULT);
-        $pdo->exec("INSERT INTO users (fullname, username, email, no_hp, password, role) VALUES ('Administrator', 'admin', 'vandptr@gmail.com', '085591821790', '$admin_pass', 'admin')");
+        $pdo->exec("INSERT INTO users (fullname, username, email, no_hp, password, role) VALUES ('Administrator', 'admin', '" . ADMIN_EMAIL . "', '" . ADMIN_PHONE . "', '$admin_pass', 'admin')");
     }
 
     // 4. Buat Tabel Bookings (untuk Admin Dashboard)
