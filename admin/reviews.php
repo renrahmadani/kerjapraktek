@@ -74,9 +74,13 @@ try {
 
         <div class="sidebar-footer">
             <ul class="sidebar-nav" style="gap:0;">
-                <li><a href="../auth.php?action=logout" onclick="return confirm('Anda yakin ingin logout?');">
-                    <span class="material-symbols-outlined">logout</span>Logout
-                </a></li>
+                <li>
+                    <a href="profile.php">
+                        <span class="material-symbols-outlined">person</span>
+                        Profil Admin
+                    </a>
+                </li>
+                <li><a href="#" onclick="confirmLogout(event, '../auth.php?action=logout');"><span class="material-symbols-outlined">logout</span>Logout</a></li>
             </ul>
         </div>
     </nav>
@@ -93,7 +97,10 @@ try {
                     <?php if($unread_notifs > 0): ?><span style="position:absolute; top:-2px; right:-2px; background:var(--error); color:white; border-radius:50%; font-size:0.6rem; width:14px; height:14px; display:flex; align-items:center; justify-content:center; font-family:sans-serif; font-weight:bold;"><?= $unread_notifs ?></span><?php endif; ?>
                 </button>
                 <div class="topbar-profile">
-                    <span class="topbar-profile-name">Hi, <?= htmlspecialchars($admin_name) ?></span>
+                    <a href="profile.php" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                        <span class="topbar-profile-name">Hi, <?= htmlspecialchars($admin_name) ?></span>
+                        <span class="material-symbols-outlined" style="color:var(--primary);">account_circle</span>
+                    </a>
                 </div>
             </div>
         </header>
@@ -156,5 +163,25 @@ try {
         </div>
     </main>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmLogout(event, url) {
+    event.preventDefault();
+    Swal.fire({
+        title: 'Konfirmasi Logout',
+        text: 'Apakah Anda yakin ingin keluar dari sesi admin?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = url;
+        }
+    });
+}
+</script>
 </body>
 </html>

@@ -99,7 +99,12 @@ try {
 
         <div class="sidebar-footer">
             <ul class="sidebar-nav" style="gap:0;">
-
+                <li>
+                    <a href="profile.php">
+                        <span class="material-symbols-outlined">person</span>
+                        Profil Admin
+                    </a>
+                </li>
                 <li>
                     <!-- Hapus Session/Logout -->
                     <a href="#" onclick="confirmLogout(event, '../auth.php?action=logout');">
@@ -124,14 +129,13 @@ try {
             <div class="topbar-actions">
                 <button class="material-symbols-outlined" style="position:relative; border:none; background:none; cursor:pointer; color:var(--on-surface-variant); margin-right:1rem; font-size:1.5rem;" onclick="window.location.href='../notifications.php'">
                     notifications
-                    <?php if($unread_notifs > 0): ?><span style="position:absolute; top:-2px; right:-2px; background:var(--error); color:white; border-radius:50%; font-size:0.6rem; width:14px; height:14px; display:flex; align-items:center; justify-content:center; font-family:sans-serif; font-weight:bold;"><?= $unread_notifs ?></span><?php endif; ?>
+                    <?php if(isset($unread_notifs) && $unread_notifs > 0): ?><span style="position:absolute; top:-2px; right:-2px; background:var(--error); color:white; border-radius:50%; font-size:0.6rem; width:14px; height:14px; display:flex; align-items:center; justify-content:center; font-family:sans-serif; font-weight:bold;"><?= $unread_notifs ?></span><?php endif; ?>
                 </button>
                 <div class="topbar-profile">
-                    <div class="topbar-profile-img">
-                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEFEvrc9N8gbQGXW4ldmtTaLZ3drxIRCSC4Cza4qUorQCNUy8LvLDeo0d5GgVGJSAbH_2EWOKT7N6XPWlJQRJ8VHyCNc8i-OIJ0ESWLnu7JCTFwRycxUgEk6hfZ0_jojkLo21s5W5SVO-CK_v1dY0Y2Q3xHnfk2oLpp8JPd4_IjxdHubT3ouInkD53hZ-orKvJdoVxjnOiIUfTbm0_QlRaaOnEWSTfmlAF5WA9mUtQJP9MTuYbs18XH9bM9aM5zOGcwrW6Zxbd7-_T" alt="Admin Profile">
-                    </div>
-                    <span class="topbar-profile-name">Hi, <?= htmlspecialchars($admin_name) ?></span>
-                    <span class="material-symbols-outlined" style="font-size: 1rem;">expand_more</span>
+                    <a href="profile.php" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                        <span class="topbar-profile-name">Hi, <?= htmlspecialchars($admin_name) ?></span>
+                        <span class="material-symbols-outlined" style="color:var(--primary);">account_circle</span>
+                    </a>
                 </div>
             </div>
         </header>

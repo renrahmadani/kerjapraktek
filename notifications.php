@@ -7,7 +7,15 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['user_id'])) {
-    echo "<script>alert('Silakan login terlebih dahulu.'); window.location.href='auth.php';</script>";
+    echo "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'><script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script></head>
+    <body style='background:#f8fafc;'><script>
+        Swal.fire({
+            icon: 'warning',
+            title: 'Harap Login',
+            text: 'Silakan login terlebih dahulu untuk melihat notifikasi.',
+            confirmButtonColor: '#3b82f6'
+        }).then(() => { window.location.href='auth.php'; });
+    </script></body></html>";
     exit;
 }
 
