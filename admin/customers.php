@@ -10,6 +10,21 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 $admin_name = $_SESSION['fullname'] ?? 'Admin';
 
+$msg = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'change_password') {
+    $customer_id = $_POST['customer_id'] ?? '';
+    $new_password = $_POST['new_password'] ?? '';
+    if (!empty($customer_id) && !empty($new_password)) {
+        $hashed = password_hash($new_password, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("UPDATE users SET password=? WHERE id=? AND role='customer'");
+        if ($stmt->execute([$hashed, $customer_id])) {
+            $msg = "<script>document.addEventListener('DOMContentLoaded', function() { Swal.fire('Berhasil!', 'Password pelanggan berhasil diubah.', 'success'); });</script>";
+        } else {
+            $msg = "<script>document.addEventListener('DOMContentLoaded', function() { Swal.fire('Gagal!', 'Terjadi kesalahan sistem.', 'error'); });</script>";
+        }
+    }
+}
+
 // Handle Delete Customer
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
     $id = $_GET['id'];
@@ -72,7 +87,7 @@ try {
                         Profil Admin
                     </a>
                 </li>
-                <li><a href="#" onclick="confirmLogout(event, '../auth.php?action=logout');"><span class="material-symbols-outlined">logout</span>Logout</a></li>
+                <li><a href="javascript:void(0)" onclick="confirmLogout(event, '../auth.php?action=logout');"><span class="material-symbols-outlined">logout</span>Logout</a></li>
             </ul>
         </div>
     </nav>
@@ -138,6 +153,7 @@ try {
                                     <td style="font-weight: 500;"><?= htmlspecialchars($c['no_hp'] ?? 'Tidak ada data') ?></td>
                                     <td style="color: var(--on-surface-variant);"><?= date('d M Y, H:i', strtotime($c['created_at'])) ?></td>
                                     <td style="text-align: right;">
+                                        <a href="javascript:void(0)" onclick="editPassword(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['fullname'])) ?>')" style="color: var(--primary); text-decoration: none; font-weight: 600; margin-right: 10px;">Edit Password</a>
                                         <a href="?action=delete&id=<?= $c['id'] ?>" onclick="return confirm('Peringatan: Menghapus pelanggan bisa menghilangkan riwayat pesanan mereka dari layar! Lanjut?')" style="color: #d32f2f; text-decoration: none; font-weight: 600;">Hapus Akun</a>
                                     </td>
                                 </tr>
@@ -149,9 +165,37 @@ try {
             </section>
         </div>
     </main>
-
+    <?= $msg ?>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<form id="formEditPassword" method="POST" style="display: none;">
+    <input type="hidden" name="action" value="change_password">
+    <input type="hidden" name="customer_id" id="ep_customer_id">
+    <input type="hidden" name="new_password" id="ep_new_password">
+</form>
 <script>
+function editPassword(id, name) {
+    Swal.fire({
+        title: 'Edit Password',
+        text: 'Masukkan kata sandi baru untuk pelanggan ' + name,
+        input: 'password',
+        inputAttributes: {
+            autocapitalize: 'off',
+            placeholder: 'Password Baru',
+            required: 'true'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Simpan',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#3b82f6',
+    }).then((result) => {
+        if (result.isConfirmed && result.value) {
+            document.getElementById('ep_customer_id').value = id;
+            document.getElementById('ep_new_password').value = result.value;
+            document.getElementById('formEditPassword').submit();
+        }
+    });
+}
+
 function confirmLogout(event, url) {
     event.preventDefault();
     Swal.fire({

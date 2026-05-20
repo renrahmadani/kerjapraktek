@@ -80,7 +80,7 @@ try {
                         Profil Admin
                     </a>
                 </li>
-                <li><a href="#" onclick="confirmLogout(event, '../auth.php?action=logout');"><span class="material-symbols-outlined">logout</span>Logout</a></li>
+                <li><a href="javascript:void(0)" onclick="confirmLogout(event, '../auth.php?action=logout');"><span class="material-symbols-outlined">logout</span>Logout</a></li>
             </ul>
         </div>
     </nav>

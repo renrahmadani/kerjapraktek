@@ -186,7 +186,7 @@ $unread_notifs = $stmt_notif->fetchColumn();
                     </a>
                 </li>
                 <li>
-                    <a href="#" onclick="confirmLogout(event, '../auth.php?action=logout');">
+                    <a href="javascript:void(0)" onclick="confirmLogout(event, '../auth.php?action=logout');">
                         <span class="material-symbols-outlined">logout</span>
                         Logout
                     </a>
