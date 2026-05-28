@@ -1351,12 +1351,12 @@ textarea.form-control {
     background-color: #e2e8f0; /* slate-200 */
     transform: translateX(4px);
 }
-.sidebar-nav li:first-child a {
+.sidebar-nav li a.active {
     background-color: var(--primary);
     color: var(--on-primary);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
-.sidebar-nav li:first-child a:hover {
+.sidebar-nav li a.active:hover {
     background-color: var(--primary-container);
 }
 
@@ -1698,4 +1698,21 @@ textarea.form-control {
     .desktop-see-all {
         display: inline-flex;
     }
+}
+
+/* Sidebar Footer Button Styling */
+.sidebar-footer .sidebar-nav li:nth-child(1) a:not(.active) {
+    background-color: var(--surface-variant);
+    color: var(--on-surface);
+    margin-bottom: 0.25rem;
+}
+.sidebar-footer .sidebar-nav li:nth-child(1) a:not(.active):hover {
+    background-color: #cbd5e1;
+}
+.sidebar-footer .sidebar-nav li:nth-child(2) a {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+.sidebar-footer .sidebar-nav li:nth-child(2) a:hover {
+    background-color: #fecaca;
 }

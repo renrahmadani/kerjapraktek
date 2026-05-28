@@ -77,7 +77,7 @@ $unread_notifs = $stmt_notif->fetchColumn();
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Admin - PT. Wahana Indo Trada</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../style.css?v=1.2">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .profile-container {
@@ -279,6 +279,7 @@ function confirmLogout(event, url) {
         title: 'Konfirmasi Logout',
         text: 'Apakah Anda yakin ingin keluar dari sesi admin?',
         icon: 'warning',
+        heightAuto: false,
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#64748b',

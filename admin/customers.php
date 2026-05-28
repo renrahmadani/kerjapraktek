@@ -47,7 +47,7 @@ try {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Pelanggan - Wahana Indo Trada</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../style.css?v=1.2">
     <style>
         .initials-avatar {
             width: 40px; height: 40px; border-radius: 50%;
@@ -202,6 +202,7 @@ function confirmLogout(event, url) {
         title: 'Konfirmasi Logout',
         text: 'Apakah Anda yakin ingin keluar dari sesi admin?',
         icon: 'warning',
+        heightAuto: false,
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#64748b',
