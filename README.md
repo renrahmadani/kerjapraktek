@@ -98,4 +98,4 @@ Aplikasi ini pakai **Gmail SMTP** untuk kirim email. Untuk setup:
 Project ini dibuat untuk keperluan **Kerja Praktek** di PT. Wahana Indo Trada.
 
 ---
-*Didevelop oleh Ren Rahmadani — 2026*
+*Didevelop oleh Rendi Rahmadani — 2026*
