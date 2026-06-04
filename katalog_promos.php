@@ -40,7 +40,11 @@ try {
             </div>
 
             <div class="nav-actions">
-                <button class="btn-primary" onclick="window.location.href='booking.php'">Book Now</button>
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <button class="btn-primary" style="background-color: var(--error); border-color: var(--error);" onclick="confirmLogoutUser(event, 'auth.php?action=logout')">Logout</button>
+                <?php else: ?>
+                    <button class="btn-primary" onclick="window.location.href='auth.php'">Login</button>
+                <?php endif; ?>
                 <button class="material-symbols-outlined" style="position:relative;" onclick="window.location.href='notifications.php'">
                     notifications
                     <?php if($unread_notifs > 0): ?><span style="position:absolute; top:-2px; right:-2px; background:var(--error); color:white; border-radius:50%; font-size:0.65rem; width:16px; height:16px; display:flex; align-items:center; justify-content:center; font-family:sans-serif; font-weight:bold;"><?= $unread_notifs ?></span><?php endif; ?>
@@ -140,5 +144,26 @@ try {
         </svg>
     </a>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmLogoutUser(event, url) {
+    event.preventDefault();
+    Swal.fire({
+        title: 'Konfirmasi Logout',
+        text: 'Apakah Anda yakin ingin keluar?',
+        icon: 'warning',
+        heightAuto: false,
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = url;
+        }
+    });
+}
+</script>
 </body>
 </html>

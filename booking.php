@@ -37,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $keluhan = $_POST['keluhan'] ?? '';
     $tgl_booking = $_POST['tgl_booking'] ?? '';
     $jam_booking = $_POST['jam_booking'] ?? '';
+    $promo_id = !empty($_POST['promo_id']) ? $_POST['promo_id'] : null;
     $nama_kendaraans = $_POST['nama_kendaraan'] ?? [];
     $plat_kendaraans = $_POST['plat_kendaraan'] ?? [];
 
@@ -92,8 +93,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $service_name = $svc_data ? $svc_data['title'] : 'Layanan Default';
 
         try {
-            $stmt = $pdo->prepare("INSERT INTO bookings (booking_code, user_id, customer_name, customer_initials, service_id, service_name, tgl_booking, jam_booking, kendaraan_details, keluhan, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Baru')");
-            $stmt->execute([$booking_code, $user_id, $customer_name, $initials, $service_id, $service_name, $tgl_booking, $jam_booking, $kendaraan_details, $keluhan]);
+            $stmt = $pdo->prepare("INSERT INTO bookings (booking_code, user_id, promo_id, customer_name, customer_initials, service_id, service_name, tgl_booking, jam_booking, kendaraan_details, keluhan, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Baru')");
+            $stmt->execute([$booking_code, $user_id, $promo_id, $customer_name, $initials, $service_id, $service_name, $tgl_booking, $jam_booking, $kendaraan_details, $keluhan]);
+            
+            $promo_name_email = "-";
+            if ($promo_id) {
+                $stmt_promo = $pdo->prepare("SELECT title, discount_text FROM promos WHERE id = ?");
+                $stmt_promo->execute([$promo_id]);
+                $promo_data = $stmt_promo->fetch();
+                if ($promo_data) {
+                    $promo_name_email = htmlspecialchars($promo_data['title']) . ' (' . htmlspecialchars($promo_data['discount_text']) . ')';
+                }
+            }
             
             // Tembak Notifikasi ke Admin (in-app)
             $notif_title = "Pesanan Baru {$booking_code}";
@@ -132,6 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <tr><td style='padding: 6px 0; color: #64748b;'>Nama Customer</td><td style='padding: 6px 0; font-weight: bold; color: #0f172a;'>: " . htmlspecialchars($customer_name) . "</td></tr>
                             <tr><td style='padding: 6px 0; color: #64748b;'>Layanan Servis</td><td style='padding: 6px 0; font-weight: bold; color: #2563eb;'>: " . htmlspecialchars($service_name) . "</td></tr>
                             <tr><td style='padding: 6px 0; color: #64748b;'>Jadwal Servis</td><td style='padding: 6px 0; font-weight: bold; color: #0f172a;'>: " . date('d M Y', strtotime($tgl_booking)) . ", " . substr($jam_booking, 0, 5) . " WIB</td></tr>
+                            <tr><td style='padding: 6px 0; color: #64748b;'>Promo Digunakan</td><td style='padding: 6px 0; font-weight: bold; color: #e11d48;'>: $promo_name_email</td></tr>
                         </table>
                     </div>
 
@@ -203,6 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <tr><td width='35%' style='padding: 6px 0; color: #64748b;'>Kode Booking</td><td style='padding: 6px 0; font-weight: bold; color: #0f172a;'>: $booking_code</td></tr>
                                 <tr><td style='padding: 6px 0; color: #64748b;'>Layanan Servis</td><td style='padding: 6px 0; font-weight: bold; color: #2563eb;'>: " . htmlspecialchars($service_name) . "</td></tr>
                                 <tr><td style='padding: 6px 0; color: #64748b;'>Jadwal Terpilih</td><td style='padding: 6px 0; font-weight: bold; color: #0f172a;'>: " . date('d M Y', strtotime($tgl_booking)) . ", " . substr($jam_booking, 0, 5) . " WIB</td></tr>
+                                <tr><td style='padding: 6px 0; color: #64748b;'>Promo Digunakan</td><td style='padding: 6px 0; font-weight: bold; color: #e11d48;'>: $promo_name_email</td></tr>
                                 <tr><td style='padding: 6px 0; color: #64748b;'>Status Pemesanan</td><td style='padding: 6px 0; font-weight: bold; color: #0f172a;'>: BARU</td></tr>
                             </table>
                         </div>
@@ -265,6 +278,13 @@ try {
     // Ignore error if table not created
 }
 
+// Fetch active promos
+$active_promos = [];
+try {
+    $stmt = $pdo->query("SELECT * FROM promos WHERE badge_type = 'active' ORDER BY id ASC");
+    $active_promos = $stmt->fetchAll();
+} catch (PDOException $e) { /* ignore */ }
+
 // Fetch upcoming bookings untuk memunculkan slot yang sudah terisi
 $upcoming_bookings = [];
 try {
@@ -299,7 +319,11 @@ try {
             </div>
 
             <div class="nav-actions">
-                <button class="btn-primary" onclick="window.location.href='booking.php'">Book Now</button>
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <button class="btn-primary" style="background-color: var(--error); border-color: var(--error);" onclick="confirmLogoutUser(event, 'auth.php?action=logout')">Logout</button>
+                <?php else: ?>
+                    <button class="btn-primary" onclick="window.location.href='auth.php'">Login</button>
+                <?php endif; ?>
                 <button class="material-symbols-outlined" style="position:relative;" onclick="window.location.href='notifications.php'">
                     notifications
                     <?php if($unread_notifs > 0): ?><span style="position:absolute; top:-2px; right:-2px; background:var(--error); color:white; border-radius:50%; font-size:0.65rem; width:16px; height:16px; display:flex; align-items:center; justify-content:center; font-family:sans-serif; font-weight:bold;"><?= $unread_notifs ?></span><?php endif; ?>
@@ -403,6 +427,21 @@ try {
                     <?php endif; ?>
                 </div>
             </section>
+
+            <?php if(!empty($active_promos)): ?>
+            <section class="form-section">
+                <h2 class="section-title">Promo Tersedia (Opsional)</h2>
+                <div style="margin-bottom: 1.5rem; background: var(--surface); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--outline-variant);">
+                    <p style="font-size: 0.85rem; color: var(--on-surface-variant); margin-bottom: 0.8rem;">Pilih promo aktif untuk mendapatkan penawaran spesial pada layanan ini.</p>
+                    <select name="promo_id" style="width:100%; padding: 0.8rem; border-radius: 0.4rem; border: 1px solid var(--outline); font-family: sans-serif; font-size: 0.95rem; background-color: #fff; cursor: pointer;">
+                        <option value="">-- Tidak Memilih Promo --</option>
+                        <?php foreach($active_promos as $promo): ?>
+                            <option value="<?= $promo['id'] ?>"><?= htmlspecialchars($promo['title']) ?> - <?= htmlspecialchars($promo['discount_text']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </section>
+            <?php endif; ?>
 
             <!-- Service Details -->
             <section class="form-section">
@@ -681,5 +720,25 @@ try {
         </svg>
     </a>
 
+<script>
+function confirmLogoutUser(event, url) {
+    event.preventDefault();
+    Swal.fire({
+        title: 'Konfirmasi Logout',
+        text: 'Apakah Anda yakin ingin keluar?',
+        icon: 'warning',
+        heightAuto: false,
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = url;
+        }
+    });
+}
+</script>
 </body>
 </html>

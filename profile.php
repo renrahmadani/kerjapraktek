@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
 }
 
 // Ambil Riwayat Booking Pelanggan
-$stmt_bk = $pdo->prepare("SELECT b.*, (SELECT id FROM reviews r WHERE r.booking_id = b.id LIMIT 1) as is_reviewed FROM bookings b WHERE b.user_id = ? ORDER BY b.id DESC LIMIT 5");
+$stmt_bk = $pdo->prepare("SELECT b.*, p.title as promo_title, p.discount_text as promo_discount, (SELECT id FROM reviews r WHERE r.booking_id = b.id LIMIT 1) as is_reviewed FROM bookings b LEFT JOIN promos p ON b.promo_id = p.id WHERE b.user_id = ? ORDER BY b.id DESC LIMIT 5");
 $stmt_bk->execute([$user_id]);
 $my_bookings = $stmt_bk->fetchAll();
 ?>
@@ -104,7 +104,11 @@ $my_bookings = $stmt_bk->fetchAll();
             </div>
 
             <div class="nav-actions">
-                <button class="btn-primary" onclick="window.location.href='booking.php'">Book Now</button>
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <button class="btn-primary" style="background-color: var(--error); border-color: var(--error);" onclick="confirmLogoutUser(event, 'auth.php?action=logout')">Logout</button>
+                <?php else: ?>
+                    <button class="btn-primary" onclick="window.location.href='auth.php'">Login</button>
+                <?php endif; ?>
                 <button class="material-symbols-outlined" style="position:relative;" onclick="window.location.href='notifications.php'">
                     notifications
                     <?php if($unread_notifs > 0): ?><span style="position:absolute; top:-2px; right:-2px; background:var(--error); color:white; border-radius:50%; font-size:0.65rem; width:16px; height:16px; display:flex; align-items:center; justify-content:center; font-family:sans-serif; font-weight:bold;"><?= $unread_notifs ?></span><?php endif; ?>
@@ -173,7 +177,12 @@ $my_bookings = $stmt_bk->fetchAll();
                                 data-selesai="<?= isset($bk['selesai_at']) ? htmlspecialchars($bk['selesai_at']) : '' ?>"
                                 data-batal="<?= isset($bk['batal_at']) ? htmlspecialchars($bk['batal_at']) : '' ?>"
                                 onclick="showTimelineModal(this, event)">
-                                <td style="font-weight: bold;"><?= htmlspecialchars($bk['booking_code']) ?></td>
+                                <td style="font-weight: bold;">
+                                    <?= htmlspecialchars($bk['booking_code']) ?>
+                                    <?php if(!empty($bk['promo_title'])): ?>
+                                        <br><span style="font-size: 0.7rem; background: var(--error); color: white; padding: 0.15rem 0.3rem; border-radius: 0.2rem; display: inline-block; margin-top: 0.2rem;"><?= htmlspecialchars($bk['promo_title']) ?></span>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <strong><?= htmlspecialchars($bk['service_name']) ?></strong>
                                     <div style="font-size: 0.8rem; color: var(--on-surface-variant); margin-top: 0.5rem; background: var(--surface-variant); padding: 0.5rem; border-radius: 0.3rem;">
@@ -356,5 +365,25 @@ function showTimelineModal(rowEl, event) {
 }
 </script>
 
+<script>
+function confirmLogoutUser(event, url) {
+    event.preventDefault();
+    Swal.fire({
+        title: 'Konfirmasi Logout',
+        text: 'Apakah Anda yakin ingin keluar?',
+        icon: 'warning',
+        heightAuto: false,
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = url;
+        }
+    });
+}
+</script>
 </body>
 </html>

@@ -142,6 +142,7 @@ try {
             id INT AUTO_INCREMENT PRIMARY KEY,
             booking_code VARCHAR(20) NOT NULL UNIQUE,
             user_id INT,
+            promo_id INT NULL,
             customer_name VARCHAR(100) NOT NULL,
             customer_initials VARCHAR(10) NOT NULL,
             service_id INT,
@@ -154,19 +155,20 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             proses_at TIMESTAMP NULL DEFAULT NULL,
             selesai_at TIMESTAMP NULL DEFAULT NULL,
-            batal_at TIMESTAMP NULL DEFAULT NULL
+            batal_at TIMESTAMP NULL DEFAULT NULL,
+            FOREIGN KEY (promo_id) REFERENCES promos(id) ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ");
 
     $stmt = $pdo->query("SELECT COUNT(*) FROM bookings");
     if ($stmt->fetchColumn() == 0) {
         $bookings = [
-            ['B-1042', 1, 'Ahmad Surya', 'AS', 1, 'Servis Berkala 10.000 KM', date('Y-m-d'), '10:00:00', '[{"nama":"Toyota Avanza", "plat":"B 1234 CD"}]', 'Ganti Oli', 'Baru'],
-            ['B-1041', 1, 'Budi Waseso', 'BW', 1, 'Ganti Oli & Filter', date('Y-m-d', strtotime('+1 day')), '08:30:00', '[{"nama":"Honda Brio", "plat":"D 5678 EF"}]', 'Mesin agak kasar', 'Proses'],
-            ['B-1040', 1, 'Citra Dewi', 'CD', 2, 'Pengecekan AC', date('Y-m-d', strtotime('+2 days')), '14:00:00', '[{"nama":"Suzuki Ertiga", "plat":"F 9012 GH"}]', 'AC kurang dingin', 'Proses']
+            ['B-1042', 1, NULL, 'Ahmad Surya', 'AS', 1, 'Servis Berkala 10.000 KM', date('Y-m-d'), '10:00:00', '[{"nama":"Toyota Avanza", "plat":"B 1234 CD"}]', 'Ganti Oli', 'Baru'],
+            ['B-1041', 1, NULL, 'Budi Waseso', 'BW', 1, 'Ganti Oli & Filter', date('Y-m-d', strtotime('+1 day')), '08:30:00', '[{"nama":"Honda Brio", "plat":"D 5678 EF"}]', 'Mesin agak kasar', 'Proses'],
+            ['B-1040', 1, NULL, 'Citra Dewi', 'CD', 2, 'Pengecekan AC', date('Y-m-d', strtotime('+2 days')), '14:00:00', '[{"nama":"Suzuki Ertiga", "plat":"F 9012 GH"}]', 'AC kurang dingin', 'Proses']
         ];
         
-        $stmt = $pdo->prepare("INSERT INTO bookings (booking_code, user_id, customer_name, customer_initials, service_id, service_name, tgl_booking, jam_booking, kendaraan_details, keluhan, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO bookings (booking_code, user_id, promo_id, customer_name, customer_initials, service_id, service_name, tgl_booking, jam_booking, kendaraan_details, keluhan, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         foreach ($bookings as $b) {
             $stmt->execute($b);
         }

@@ -16,7 +16,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
     $id = $_GET['id'];
     
     // Ambil data user_id dan kode booking untuk keperluan notifikasi
-    $stmt = $pdo->prepare("SELECT user_id, booking_code, service_name, kendaraan_details, keluhan, created_at, proses_at, selesai_at, batal_at, tgl_booking, jam_booking FROM bookings WHERE id=?");
+    $stmt = $pdo->prepare("SELECT user_id, promo_id, booking_code, service_name, kendaraan_details, keluhan, created_at, proses_at, selesai_at, batal_at, tgl_booking, jam_booking FROM bookings WHERE id=?");
     $stmt->execute([$id]);
     $bkData = $stmt->fetch();
     $target_user_id = $bkData['user_id'] ?? null;
@@ -68,8 +68,18 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         $kendaraan_html = "<tr><td colspan='2' style='padding:8px; color:#999;'>Tidak ada data kendaraan</td></tr>";
     }
 
+    $promo_name_email = "-";
+    if (!empty($bkData['promo_id'])) {
+        $stmt_promo = $pdo->prepare("SELECT title, discount_text FROM promos WHERE id = ?");
+        $stmt_promo->execute([$bkData['promo_id']]);
+        $promo_data = $stmt_promo->fetch();
+        if ($promo_data) {
+            $promo_name_email = htmlspecialchars($promo_data['title']) . ' (' . htmlspecialchars($promo_data['discount_text']) . ')';
+        }
+    }
+
     // Helper fungsi pembuat template HTML untuk email Customer
-    $make_cust_email = function($status_label, $header_bg, $intro_text, $status_color) use ($bk_code, $service_name, $keluhan, $kendaraan_html, $tgl_booking, $jam_booking, $created_at, &$proses_at, &$selesai_at, &$batal_at, $cust_name) {
+    $make_cust_email = function($status_label, $header_bg, $intro_text, $status_color) use ($bk_code, $service_name, $keluhan, $kendaraan_html, $tgl_booking, $jam_booking, $created_at, &$proses_at, &$selesai_at, &$batal_at, $cust_name, $promo_name_email) {
         $now_str = date('d M Y, H:i');
         
         $c_time = ($created_at) ? date('d M Y, H:i', strtotime($created_at)) : 'Tercatat';
@@ -112,6 +122,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
                         <tr><td width='35%' style='padding: 6px 0; color: #64748b;'>Kode Booking</td><td style='padding: 6px 0; font-weight: bold; color: #0f172a;'>: $bk_code</td></tr>
                         <tr><td style='padding: 6px 0; color: #64748b;'>Layanan Servis</td><td style='padding: 6px 0; font-weight: bold; color: #2563eb;'>: " . htmlspecialchars($service_name) . "</td></tr>
                         <tr><td style='padding: 6px 0; color: #64748b;'>Jadwal Terpilih</td><td style='padding: 6px 0; font-weight: bold; color: #0f172a;'>: " . date('d M Y', strtotime($tgl_booking)) . ", " . substr($jam_booking, 0, 5) . " WIB</td></tr>
+                        <tr><td style='padding: 6px 0; color: #64748b;'>Promo Digunakan</td><td style='padding: 6px 0; font-weight: bold; color: #e11d48;'>: $promo_name_email</td></tr>
                         <tr><td style='padding: 6px 0; color: #64748b;'>Status Pemesanan</td><td style='padding: 6px 0; font-weight: bold; color: $status_color;'>: " . strtoupper($status_label) . "</td></tr>
                     </table>
                 </div>
@@ -205,7 +216,29 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         $pdo->prepare("DELETE FROM bookings WHERE id=?")->execute([$id]);
         if ($target_user_id) {
             $pdo->prepare("INSERT INTO notifications (user_id, title, message) VALUES (?, 'Pesanan Dihapus', 'Riwayat pesanan $bk_code telah dihapus dari sistem oleh Admin.')")->execute([$target_user_id]);
+            if (!empty($cust_email)) {
+                $email_body = $make_cust_email('Hapus', '#475569', 'Riwayat pemesanan antrean servis Anda telah <strong>dihapus permanen</strong> dari sistem kami.', '#475569');
+                send_email_notification($cust_email, "Riwayat Pesanan $bk_code Dihapus", $email_body);
+            }
         }
+        
+        $stmt_adm = $pdo->query("SELECT email FROM users WHERE role = 'admin' LIMIT 1");
+        $admin_data = $stmt_adm->fetch();
+        $admin_email = $admin_data ? $admin_data['email'] : ADMIN_EMAIL;
+        
+        $admin_body = "
+        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 20px; border-radius: 8px;'>
+            <div style='background-color: #475569; color: #ffffff; padding: 15px; text-align: center; border-radius: 8px 8px 0 0;'>
+                <h2 style='margin: 0;'>Notifikasi Sistem</h2>
+            </div>
+            <div style='background-color: #ffffff; padding: 25px; border-radius: 0 0 8px 8px;'>
+                <p>Halo Admin,</p>
+                <p>Data booking <strong>$bk_code</strong> atas nama <strong>" . htmlspecialchars($cust_name) . "</strong> telah berhasil dihapus dari sistem database.</p>
+                <hr style='border: none; border-top: 1px solid #eee; margin: 20px 0;'>
+                <p style='font-size: 13px; color: #94a3b8;'>Notifikasi Otomatis - PT. Wahana Indo Trada</p>
+            </div>
+        </div>";
+        send_email_notification($admin_email, "Data Booking $bk_code Dihapus", $admin_body);
     }
     
     // Redirect
@@ -220,12 +253,12 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 
 // Fetch Semua Bookings
 try {
-    $stmt = $pdo->query("SELECT * FROM bookings ORDER BY booking_date DESC");
+    $stmt = $pdo->query("SELECT b.*, p.title as promo_title FROM bookings b LEFT JOIN promos p ON b.promo_id = p.id ORDER BY b.booking_date DESC");
     $allBookings = $stmt->fetchAll();
 } catch (PDOException $e) {
     // If testing using new db schema, it's tgl_booking
     try {
-        $stmt = $pdo->query("SELECT * FROM bookings ORDER BY tgl_booking DESC, jam_booking DESC");
+        $stmt = $pdo->query("SELECT b.*, p.title as promo_title FROM bookings b LEFT JOIN promos p ON b.promo_id = p.id ORDER BY b.tgl_booking DESC, b.jam_booking DESC");
         $allBookings = $stmt->fetchAll();
     } catch (PDOException $e2) {
         $allBookings = [];
@@ -357,7 +390,10 @@ try {
                                     </td>
                                     <td>
                                         <strong><?= htmlspecialchars($bk['service_name']) ?></strong>
-                                        <div style="font-size: 0.8rem; color: var(--on-surface-variant); margin-top: 0.5rem; background: var(--surface-variant); padding: 0.5rem; border-radius: 0.3rem;">
+                                        <?php if(!empty($bk['promo_title'])): ?>
+                                            <span style="font-size: 0.7rem; background: var(--error); color: white; padding: 0.15rem 0.3rem; border-radius: 0.2rem; margin-left: 0.3rem; vertical-align: top; display: inline-block; margin-bottom: 0.2rem;"><?= htmlspecialchars($bk['promo_title']) ?></span>
+                                        <?php endif; ?>
+                                        <div style="font-size: 0.8rem; color: var(--on-surface-variant); margin-top: 0.3rem; background: var(--surface-variant); padding: 0.5rem; border-radius: 0.3rem;">
                                             <?php 
                                             $kendaraan = json_decode($bk['kendaraan_details'], true);
                                             if (is_array($kendaraan) && !empty($kendaraan)) {
@@ -392,7 +428,7 @@ try {
                                         <?php elseif($bk['status'] === 'Proses'): ?>
                                             <a href="?action=set_selesai&id=<?= $bk['id'] ?>">Selesai</a> |
                                         <?php endif; ?>
-                                        <a href="?action=delete&id=<?= $bk['id'] ?>" onclick="return confirm('Hapus permanen booking ini?')" class="btn-danger">Hapus</a>
+                                        <a href="#" onclick="confirmDeleteBooking(event, '?action=delete&id=<?= $bk['id'] ?>')" class="btn-danger">Hapus</a>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -518,5 +554,25 @@ function confirmLogout(event, url) {
 }
 </script>
 
+<script>
+function confirmDeleteBooking(event, url) {
+    event.preventDefault();
+    Swal.fire({
+        title: 'Hapus Booking?',
+        text: 'Apakah Anda yakin ingin menghapus permanen data booking ini? Aksi ini tidak dapat dibatalkan.',
+        icon: 'warning',
+        heightAuto: false,
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = url;
+        }
+    });
+}
+</script>
 </body>
 </html>
