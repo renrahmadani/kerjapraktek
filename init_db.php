@@ -156,7 +156,9 @@ try {
             proses_at TIMESTAMP NULL DEFAULT NULL,
             selesai_at TIMESTAMP NULL DEFAULT NULL,
             batal_at TIMESTAMP NULL DEFAULT NULL,
-            FOREIGN KEY (promo_id) REFERENCES promos(id) ON DELETE SET NULL
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+            FOREIGN KEY (promo_id) REFERENCES promos(id) ON DELETE SET NULL,
+            FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ");
 
@@ -182,7 +184,8 @@ try {
             title VARCHAR(100) NOT NULL,
             message TEXT NOT NULL,
             is_read TINYINT(1) DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ");
 
@@ -197,7 +200,9 @@ try {
             rating INT NOT NULL DEFAULT 5,
             comment TEXT NOT NULL,
             status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ");
 
