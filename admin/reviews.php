@@ -4,7 +4,7 @@ require_once '../config.php';
 
 // Proteksi Halaman
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    echo "<script>alert('Akses Ditolak!'); window.location.href='../auth.php';</script>";
+    echo "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'><script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script></head><body style='background:#f8fafc;'><script>Swal.fire({icon: 'warning',title: 'Akses Ditolak',text: 'Silakan login sebagai Admin.',confirmButtonColor: '#3b82f6'}).then(() => { window.location.href='../auth.php'; });</script></body></html>";
     exit;
 }
 

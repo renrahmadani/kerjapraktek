@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
     $cek_rev = $pdo->prepare("SELECT id FROM reviews WHERE booking_id = ?");
     $cek_rev->execute([$b_id]);
     if ($cek_rev->fetch()) {
-         echo "<script>alert('Anda sudah memberikan ulasan untuk pesanan ini.'); window.location.href='profile.php';</script>";
+         echo "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'><script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script></head><body style='background:#f8fafc;'><script>Swal.fire({icon: 'warning',title: 'Ditolak',text: 'Anda sudah memberikan ulasan untuk pesanan ini.',confirmButtonColor: '#3b82f6'}).then(() => { window.location.href='profile.php'; });</script></body></html>";
          exit;
     }
 

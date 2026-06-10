@@ -4,7 +4,7 @@ require_once '../config.php';
 
 // Proteksi Halaman
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    echo "<script>alert('Akses Ditolak!'); window.location.href='../auth.php';</script>";
+    echo "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'><script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script></head><body style='background:#f8fafc;'><script>Swal.fire({icon: 'warning',title: 'Akses Ditolak',text: 'Silakan login sebagai Admin.',confirmButtonColor: '#3b82f6'}).then(() => { window.location.href='../auth.php'; });</script></body></html>";
     exit;
 }
 
@@ -59,12 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($title) && !empty($desc)) {
         $stmt = $pdo->prepare("INSERT INTO promos (title, description, badge_text, badge_type, discount_text, bg_gradient_start, bg_gradient_end, image_url, valid_until) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         if ($stmt->execute([$title, $desc, $badge_text, $badge_type, $discount_text, $bg_start, $bg_end, $final_image_url, $valid_until])) {
-            $msg = "<p style='color: green; font-weight: bold;'>Promo berhasil ditambahkan!</p>";
+            $msg = "<script>document.addEventListener('DOMContentLoaded', function() { Swal.fire({icon: 'success', title: 'Berhasil!', text: 'Promo berhasil ditambahkan!', confirmButtonColor: '#3b82f6'}); });</script>";
         } else {
-            $msg = "<p style='color: red; font-weight: bold;'>Gagal menambahkan promo.</p>";
+            $msg = "<script>document.addEventListener('DOMContentLoaded', function() { Swal.fire({icon: 'error', title: 'Gagal', text: 'Gagal menambahkan promo.', confirmButtonColor: '#d33'}); });</script>";
         }
     } else {
-        $msg = "<p style='color: red; font-weight: bold;'>Harap lengkapi Judul dan Deskripsi minimal!</p>";
+        $msg = "<script>document.addEventListener('DOMContentLoaded', function() { Swal.fire({icon: 'warning', title: 'Peringatan', text: 'Harap lengkapi Judul dan Deskripsi minimal!', confirmButtonColor: '#f59e0b'}); });</script>";
     }
 }
 
@@ -80,8 +80,9 @@ try {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Promo - Wahana Indo Trada</title>
+    <title>Kelola Promo - Admin</title>
     <link rel="stylesheet" href="../style.css?v=1.2">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .form-full { grid-column: span 2; }
@@ -232,7 +233,7 @@ try {
                                     <td><?= htmlspecialchars($p['badge_text']) ?></td>
                                     <td><?= htmlspecialchars($p['valid_until']) ?></td>
                                     <td style="text-align: right;">
-                                        <a href="?action=delete&id=<?= $p['id'] ?>" onclick="return confirm('Hapus promo ini dari halaman utama?')" style="color: #d32f2f; text-decoration: none; font-weight: 600;">Hapus</a>
+                                        <a href="#" onclick="confirmDeletePromo(event, '?action=delete&id=<?= $p['id'] ?>')" class="btn-danger" style="color: #d32f2f; text-decoration: none; font-weight: 600;">Hapus</a>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -244,7 +245,6 @@ try {
         </div>
     </main>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 function confirmLogout(event, url) {
     event.preventDefault();

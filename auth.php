@@ -153,9 +153,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
         
         <?php if($success): ?>
-            <div style="background: #e2fce6; color: #0d4a1b; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; font-weight: 500;">
-                <?= htmlspecialchars($success) ?>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: '<?= addslashes($success) ?>',
+                        icon: 'success',
+                        confirmButtonColor: '#3b82f6'
+                    }).then(() => {
+                        switchTab('login');
+                    });
+                });
+            </script>
         <?php endif; ?>
 
         <!-- Content Tabs -->
