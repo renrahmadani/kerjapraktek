@@ -45,7 +45,7 @@ try {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - PT. Wahana Indo Trada</title>
-    <link rel="stylesheet" href="../style.css?v=1.2">
+    <link rel="stylesheet" href="../style.css?v=1.4">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="dashboard-layout">
@@ -53,7 +53,7 @@ try {
     <!-- Sidebar -->
     <nav class="sidebar">
         <!-- Header -->
-        <div class="sidebar-header" style="cursor: pointer;" onclick="window.location.href='../index.php'">
+        <div class="sidebar-header" style="cursor: pointer;" onclick="window.location.href='dashboard.php'">
             <div class="sidebar-avatar">
                 <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEFEvrc9N8gbQGXW4ldmtTaLZ3drxIRCSC4Cza4qUorQCNUy8LvLDeo0d5GgVGJSAbH_2EWOKT7N6XPWlJQRJ8VHyCNc8i-OIJ0ESWLnu7JCTFwRycxUgEk6hfZ0_jojkLo21s5W5SVO-CK_v1dY0Y2Q3xHnfk2oLpp8JPd4_IjxdHubT3ouInkD53hZ-orKvJdoVxjnOiIUfTbm0_QlRaaOnEWSTfmlAF5WA9mUtQJP9MTuYbs18XH9bM9aM5zOGcwrW6Zxbd7-_T" alt="Admin Profile">
             </div>

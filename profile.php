@@ -76,6 +76,7 @@ $my_bookings = $stmt_bk->fetchAll();
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white; font-size: 2rem; font-weight: bold;
             display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
         }
         .profile-info h1 { font-family: var(--font-headline); font-size: 1.8rem; margin: 0 0 0.5rem 0; color: var(--on-surface); }
         .profile-info p { color: var(--on-surface-variant); margin: 0 0 0.2rem 0; display: flex; align-items: center; gap: 0.5rem; }
@@ -84,6 +85,17 @@ $my_bookings = $stmt_bk->fetchAll();
         
         .history-card { background: var(--surface); padding: 2rem; border-radius: 1rem; box-shadow: var(--shadow-sm); }
         .history-title { font-family: var(--font-headline); font-size: 1.4rem; margin-bottom: 1.5rem; color: var(--primary); }
+        
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            .profile-info p {
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body style="background: var(--background);">

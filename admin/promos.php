@@ -13,9 +13,14 @@ $admin_name = $_SESSION['fullname'] ?? 'Admin';
 // Handle Delete
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
     $id = $_GET['id'];
-    $pdo->prepare("DELETE FROM promos WHERE id=?")->execute([$id]);
-    header("Location: promos.php");
-    exit;
+    try {
+        $pdo->prepare("DELETE FROM promos WHERE id=?")->execute([$id]);
+        echo "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'><script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script></head><body style='background:#f8fafc;'><script>Swal.fire({icon: 'success', title: 'Terhapus', text: 'Promo berhasil dihapus.', showConfirmButton: false, timer: 1500}).then(() => { window.location.href='promos.php'; });</script></body></html>";
+        exit;
+    } catch(Exception $e) {
+        echo "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'><script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script></head><body style='background:#f8fafc;'><script>Swal.fire({icon: 'error', title: 'Gagal', text: 'Gagal menghapus promo: " . addslashes($e->getMessage()) . "'}).then(() => { window.location.href='promos.php'; });</script></body></html>";
+        exit;
+    }
 }
 
 // Handle Insert
@@ -81,18 +86,22 @@ try {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Promo - Admin</title>
-    <link rel="stylesheet" href="../style.css?v=1.2">
+    <link rel="stylesheet" href="../style.css?v=1.4">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .form-full { grid-column: span 2; }
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .form-full { grid-column: span 1; }
+        }
     </style>
 </head>
 <body class="dashboard-layout">
     
     <nav class="sidebar">
         <!-- Header -->
-        <div class="sidebar-header" style="cursor:pointer;" onclick="window.location.href='../index.php'">
+        <div class="sidebar-header" style="cursor:pointer;" onclick="window.location.href='dashboard.php'">
             <div class="sidebar-avatar">
                 <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEFEvrc9N8gbQGXW4ldmtTaLZ3drxIRCSC4Cza4qUorQCNUy8LvLDeo0d5GgVGJSAbH_2EWOKT7N6XPWlJQRJ8VHyCNc8i-OIJ0ESWLnu7JCTFwRycxUgEk6hfZ0_jojkLo21s5W5SVO-CK_v1dY0Y2Q3xHnfk2oLpp8JPd4_IjxdHubT3ouInkD53hZ-orKvJdoVxjnOiIUfTbm0_QlRaaOnEWSTfmlAF5WA9mUtQJP9MTuYbs18XH9bM9aM5zOGcwrW6Zxbd7-_T" alt="Admin Profile">
             </div>
@@ -143,10 +152,10 @@ try {
             </div>
         </header>
 
-        <div class="dashboard-content" style="display: grid; gap: 2rem;">
+        <div class="dashboard-content">
             <?= $msg ?>
             
-            <section class="table-card" style="padding: 2rem;">
+            <section class="table-card dashboard-form-card">
                 <h2 style="margin-bottom: 1rem;">Tambah Promo Baru</h2>
                 <form action="promos.php" method="POST" enctype="multipart/form-data">
                     <div class="form-grid">
@@ -246,6 +255,25 @@ try {
     </main>
 
 <script>
+function confirmDeletePromo(event, url) {
+    event.preventDefault();
+    Swal.fire({
+        title: 'Hapus Promo?',
+        text: 'Anda yakin ingin menghapus promo ini?',
+        icon: 'warning',
+        heightAuto: false,
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = url;
+        }
+    });
+}
+
 function confirmLogout(event, url) {
     event.preventDefault();
     Swal.fire({
